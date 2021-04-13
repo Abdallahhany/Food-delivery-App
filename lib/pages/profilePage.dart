@@ -32,7 +32,6 @@ class _ProfilePageState extends State<ProfilePage> {
       fullName: response["data"]["fullName"],
       phoneNumber: response["data"]["phoneNumber"],
       image: response["data"]["image"],
-
     );
   }
 
@@ -67,35 +66,36 @@ class _ProfilePageState extends State<ProfilePage> {
                           color: Colors.black38),
                     ],
                     image: DecorationImage(
-                      image:  _imageFile == null
-                          ? user.image == "" ? AssetImage("assets/profile.jpg")
-                          :  widget.model.getProfileImage(user.userName) :FileImage(File(_imageFile.path)) ,
+                      image: _imageFile == null
+                          ? user.image == ""
+                              ? AssetImage("assets/profile.jpg")
+                              : widget.model.getProfileImage(user.userName)
+                          : FileImage(File(_imageFile.path)),
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
                 Positioned(
-                    bottom: 15.0,
-                    right: 15.0,
-                    child: InkWell(
-                      onTap: (){
-                        showModalBottomSheet(
-                          context: context,
-                          builder: ((builder) => submitBottomSheet()),
-                        );
-                        showModalBottomSheet(
-                          context: context,
-                          builder: ((builder) => bottomSheet()),
-                        );
-                      },
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Theme.of(context).primaryColor,
-                        size: 30.0,
-                      ),
+                  bottom: 15.0,
+                  right: 15.0,
+                  child: InkWell(
+                    onTap: () {
+                      // showModalBottomSheet(
+                      //   context: context,
+                      //   builder: ((builder) => submitBottomSheet()),
+                      // );
+                      showModalBottomSheet(
+                        context: context,
+                        builder: ((builder) => bottomSheet()),
+                      );
+                    },
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: Theme.of(context).primaryColor,
+                      size: 30.0,
                     ),
                   ),
-
+                ),
               ]),
               SizedBox(
                 width: 20.0,
@@ -303,18 +303,21 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: 30.0,
                       color: Colors.grey,
                     ),
-                     InkWell(
-                       child: Row(
-                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                         children: [
-                           Text("Logout", style: TextStyle(fontSize: 18.0,color: Colors.red[700])),
-                           Icon(Icons.power_settings_new,color: Colors.red[700],),
-                         ],
-                       ),
-                       onTap: logOut,
-                     ),
-
-
+                    InkWell(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Logout",
+                              style: TextStyle(
+                                  fontSize: 18.0, color: Colors.red[700])),
+                          Icon(
+                            Icons.power_settings_new,
+                            color: Colors.red[700],
+                          ),
+                        ],
+                      ),
+                      onTap: logOut,
+                    ),
                   ],
                 ),
               ),
@@ -362,51 +365,49 @@ class _ProfilePageState extends State<ProfilePage> {
               },
               label: Text("Gallery"),
             ),
-          ])
+          ]),
+           _imageFile == null ? null : Container(
+              height: 150.0,
+              width: MediaQuery.of(context).size.width,
+              margin: EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 20,
+              ),
+              child: Center(
+                child: InkWell(
+                  onTap: () async {
+                    if (_imageFile.path != null) {
+                      var imageResponse = await widget.model
+                          .patchImage(_imageFile.path, user.userName);
+                      print(imageResponse.statusCode);
+                      if (imageResponse.statusCode == 200 ||
+                          imageResponse.statusCode == 201) {
+                        Navigator.of(context).pop();
+                        SnackBar snackBar = SnackBar(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          content: Text("Profile Image Updated Successfully"),
+                          duration: Duration(milliseconds: 3000),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      }
+                    }
+                  },
+                  child: Container(
+                    height: 50.0,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(35.0),
+                    ),
+                    child: Center(
+                        child: Text(
+                      'Submit',
+                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+                    )),
+                  ),
+                ),
+              )),
         ],
       ),
-    );
-  }
-
-
-  Widget submitBottomSheet() {
-    return Container(
-      height: 150.0,
-      width: MediaQuery.of(context).size.width,
-      margin: EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 20,
-      ),
-      child: Center(
-        child: InkWell(
-          onTap: ()async{
-            if (_imageFile.path != null) {
-              var imageResponse =
-                  await widget.model.patchImage(_imageFile.path, user.userName);
-              print(imageResponse.statusCode);
-              if (imageResponse.statusCode == 200 ||
-                  imageResponse.statusCode == 201) {
-                Navigator.of(context).pop();
-                SnackBar snackBar = SnackBar(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  content: Text("Profile Image Updated Successfully"),
-                  duration: Duration(milliseconds: 3000),
-                );
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(snackBar);
-              }
-            }
-          },
-          child: Container(
-            height: 50.0,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: BorderRadius.circular(35.0),
-            ),
-            child: Center(child: Text('Submit',style: TextStyle(color: Colors.white,fontSize: 20.0),)),
-          ),
-        ),
-      )
     );
   }
 
@@ -416,8 +417,12 @@ class _ProfilePageState extends State<ProfilePage> {
       _imageFile = pickedImage;
     });
   }
-  void logOut ()async{
+
+  void logOut() async {
     await storage.delete(key: 'token');
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=> SignInPage()), (route) => false);
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => SignInPage()),
+        (route) => false);
   }
 }
