@@ -80,10 +80,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   right: 15.0,
                   child: InkWell(
                     onTap: () {
-                      // showModalBottomSheet(
-                      //   context: context,
-                      //   builder: ((builder) => submitBottomSheet()),
-                      // );
                       showModalBottomSheet(
                         context: context,
                         builder: ((builder) => bottomSheet()),
